@@ -12,11 +12,18 @@ Scripts used to run each of the 9 structure-prediction models on the merged EGFR
 | `06_chai1/` | Chai-1 | Reduced trunk recycles / diffusion steps to fit GPU memory |
 | `07_helixfold3/` | HelixFold3 | `setup_helix_inputs.sh` assembles the MSA folder structure HelixFold3 expects; `run_helixfold3.sh` then runs inference with skip/resume logic per input |
 | `08_protenix/` | Protenix | |
-| `09_seedfold/` | SeedFold | Predictions were generated via SeedFold's web dashboard (https://seedfold.io/dashboard/proteinPrediction) — closed, commercial, no local script; results downloaded as `.tar.gz` archives per run. `extract_seedfold_metrics.py` parses the returned `confidence_*.json` files into a metrics table |
+| `09_seedfold/` | SeedFold | Predictions were generated via SeedFold's web dashboard (https://seedfold.io/dashboard/proteinPrediction) - closed, commercial, no local script; results downloaded as `.tar.gz` archives per run. `extract_seedfold_metrics.py` parses the returned `confidence_*.json` files into a metrics table |
 
 ## Before running
 
-All scripts have **hardcoded absolute paths** from the original workstation (e.g. `/home/nehajay/project_new/...`, `/home/postyr/...`), including conda env locations, database paths, and CUDA versions. These will need to be updated to match your own environment — they're left as-is here for transparency/reproducibility of exactly what was run, not as drop-in scripts.
+Set up your machine config once:
+
+```bash
+cp models/env.example.sh models/env.sh
+# then edit models/env.sh with your own paths (project root, conda envs, shared databases, etc.)
+```
+
+Each script sources `env.sh` and uses those variables instead of hardcoded paths. `env.sh` itself is git-ignored, so your local paths never get committed - only `env.example.sh` (the template) is tracked.
 
 Each model also has its own installation and database requirements (e.g. AlphaFold2/3 need their respective sequence databases; OpenFold2 needs precomputed alignments; HelixFold3 needs its own conda env). See each model's own repository for setup instructions:
 
@@ -28,8 +35,8 @@ Each model also has its own installation and database requirements (e.g. AlphaFo
 - Chai-1: https://github.com/chaidiscovery/chai-lab
 - HelixFold3: https://github.com/PaddlePaddle/PaddleHelix
 - Protenix: https://github.com/bytedance/Protenix
-- SeedFold: https://seedfold.io (web dashboard, closed/commercial — no public repo)
+- SeedFold: https://seedfold.io (web dashboard, closed/commercial - no public repo)
 
 ## Order
 
-Run `run_all_models.sh` for a documented walkthrough of the order these were executed in (it doesn't auto-run everything end-to-end, since each model needs its own environment activated first — see comments inside).
+Run `run_all_models.sh` for a documented walkthrough of the order these were executed in (it doesn't auto-run everything end-to-end, since each model needs its own environment activated first - see comments inside).

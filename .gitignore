@@ -1,3 +1,6 @@
+# Personal machine config (copy from models/env.example.sh)
+models/env.sh
+
 # Data & outputs (usually too large / regenerable — remove this section if you want to track them)
 data/
 plots/

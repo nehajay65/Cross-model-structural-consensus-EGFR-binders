@@ -4,9 +4,6 @@
  
  
 
-
-
-
 """
 SeedFold Metrics Extractor
 Extracts pLDDT, ptm, iptm, ranking_score, and per-chain metrics
@@ -25,25 +22,22 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
+# Helpers
 def load_confidence(json_path: str) -> dict:
     with open(json_path) as f:
         return json.load(f)
-
 
 def extract_metrics(data: dict) -> dict:
     """Pull every useful scalar and array-derived metric from one confidence JSON."""
     metrics = {}
 
-    # ── Top-level scalars (present in most SeedFold / AF3-style outputs) ──
+    #  Top-level scalars (present in most SeedFold / AF3-style outputs) 
     for key in ("ptm", "iptm", "ranking_score", "fraction_disordered",
                 "has_clash", "num_recycles"):
         if key in data:
             metrics[key] = data[key]
 
-    # ── pLDDT  (stored as per-atom or per-residue array) ──────────────────
+    #  pLDDT  (stored as per-atom or per-residue array) 
     plddt_key = next(
         (k for k in ("atom_plddts", "plddt", "per_residue_plddt") if k in data),
         None
@@ -58,13 +52,13 @@ def extract_metrics(data: dict) -> dict:
         metrics["pct_plddt_gt70"] = float((arr > 70).mean() * 100)
         metrics["pct_plddt_gt90"] = float((arr > 90).mean() * 100)
 
-    # ── Per-chain pLDDT (chain_plddts dict) ───────────────────────────────
+    #  Per-chain pLDDT (chain_plddts dict) 
     if "chain_plddts" in data:
         for chain, vals in data["chain_plddts"].items():
             arr = np.array(vals)
             metrics[f"chain_{chain}_mean_plddt"] = float(arr.mean())
 
-    # ── PAE-derived metrics ────────────────────────────────────────────────
+    #  PAE-derived metrics 
     pae_key = next(
         (k for k in ("predicted_aligned_error", "pae") if k in data),
         None
@@ -75,7 +69,7 @@ def extract_metrics(data: dict) -> dict:
         metrics["median_pae"] = float(np.median(pae))
         metrics["max_pae"]    = float(pae.max())
 
-    # ── Chain-pair PAE (interface quality) ────────────────────────────────
+    #  Chain-pair PAE (interface quality) 
     if "chain_pair_pae_min" in data:
         for pair, val in data["chain_pair_pae_min"].items():
             metrics[f"pair_pae_min_{pair}"] = float(val)
@@ -85,7 +79,6 @@ def extract_metrics(data: dict) -> dict:
             metrics[f"pair_iptm_{pair}"] = float(val)
 
     return metrics
-
 
 def parse_name_and_model(json_path: str):
     """
@@ -99,9 +92,7 @@ def parse_name_and_model(json_path: str):
     model_idx = int(parts[1]) if len(parts) == 2 else -1
     return run_name, model_idx
 
-
-# ── Main ──────────────────────────────────────────────────────────────────────
-
+# Main
 def collect_metrics(results_dir: str) -> pd.DataFrame:
     pattern = os.path.join(results_dir, "**", "confidence_*.json")
     json_files = sorted(glob.glob(pattern, recursive=True))
@@ -124,11 +115,10 @@ def collect_metrics(results_dir: str) -> pd.DataFrame:
             row.update(metrics)
             rows.append(row)
         except Exception as e:
-            print(f"  ⚠ Skipping {jf}: {e}")
+            print(f"  [!] Skipping {jf}: {e}")
 
     df = pd.DataFrame(rows).sort_values(["run_name", "model"]).reset_index(drop=True)
     return df
-
 
 def summarise(df: pd.DataFrame) -> pd.DataFrame:
     """Best model per run (by ranking_score, falling back to mean_plddt)."""
@@ -142,9 +132,7 @@ def summarise(df: pd.DataFrame) -> pd.DataFrame:
     best.insert(1, "best_model_by", score_col)
     return best
 
-
-# ── CLI ───────────────────────────────────────────────────────────────────────
-
+# CLI
 def main():
     parser = argparse.ArgumentParser(description="Extract SeedFold confidence metrics.")
     parser.add_argument("--results_dir", default=".", help="Root dir of unpacked results")
@@ -156,23 +144,22 @@ def main():
 
     df = collect_metrics(args.results_dir)
 
-    # ── Print a quick preview ──────────────────────────────────────────────
+    #  Print a quick preview 
     preview_cols = ["run_name", "model", "ranking_score", "mean_plddt",
                     "ptm", "iptm", "mean_pae"]
     show_cols = [c for c in preview_cols if c in df.columns]
-    print("── All models ──────────────────────────────────────────────")
+    print(" All models ")
     print(df[show_cols].to_string(index=False))
 
     summary = summarise(df)
-    print("\n── Best model per run ──────────────────────────────────────")
+    print("\n Best model per run ")
     print(summary[show_cols].to_string(index=False))
 
-    # ── Save ──────────────────────────────────────────────────────────────
+    #  Save 
     df.to_csv(args.out, index=False)
     summary.to_csv(args.summary, index=False)
-    print(f"\n✓ Full table  → {args.out}")
-    print(f"✓ Best models → {args.summary}")
-
+    print(f"\n[OK] Full table  → {args.out}")
+    print(f"[OK] Best models → {args.summary}")
 
 if __name__ == "__main__":
     main()

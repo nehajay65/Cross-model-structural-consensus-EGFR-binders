@@ -29,7 +29,7 @@ parser.add_argument("input_dir", help="Directory containing unrelaxed .pdb files
 
 # An option to tell where the AF2 code is. 
 # Also change the **default** to wherever your cloned AF2 is.
-parser.add_argument("--af2_dir", default="home/postyr/alphafold", help="AlphaFold code directory")
+parser.add_argument("--af2_dir", default=os.path.expanduser("~/alphafold"), help="AlphaFold code directory")
  
 args = parser.parse_args()
 # This line below should put the AF code in your environment path
@@ -88,7 +88,7 @@ def main():
         try:
             relax_with_amber(model_path, output_dir)
         except Exception as e:
-            print(f"FAILED: {model_path.name} — {e}")
+            print(f"FAILED: {model_path.name} - {e}")
             continue
 
 if __name__ == "__main__":

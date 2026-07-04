@@ -1,6 +1,5 @@
 """
-STEP 2 — Extract native confidence metrics
-==========================================
+STEP 2 - Extract native confidence metrics
 Run this after step1. It reads prediction_records.parquet, pulls per-method
 confidence numbers (pLDDT, iPTM, PTM, ranking scores) from the JSON/pkl/npz
 files next to each structure, and saves an enriched parquet.
@@ -21,7 +20,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 
 class NativeMetricExtractor:
 
@@ -76,7 +74,7 @@ class NativeMetricExtractor:
                 out[f"{prefix}_{k.replace('.', '__')}"] = val
         return out
 
-    # ── per-method extractors ─────────────────────────────────────────────────
+    #  per-method extractors 
 
     def _af2(self, row):
         out = {}
@@ -170,7 +168,7 @@ class NativeMetricExtractor:
             return self._all_numeric(self._flatten(self._load_json(Path(jp))), "of3")
         return {}
 
-    # ── dispatcher ───────────────────────────────────────────────────────────
+    #  dispatcher 
 
     def extract_row(self, row):
         dispatch = {
@@ -186,9 +184,7 @@ class NativeMetricExtractor:
         }
         return dispatch.get(row["method"], lambda _: {})(row)
 
-
-# ─── CLI ─────────────────────────────────────────────────────────────────────
-
+# CLI
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--records", required=True,
@@ -224,8 +220,6 @@ if __name__ == "__main__":
         filled = {c: sub[c].notna().sum() for c in method_cols if sub[c].notna().sum() > 0}
         if filled:
             print(f"  {method}: {filled}")
-
-
 
 #execut in terminal:
 """ python extract_metrics_2.py \

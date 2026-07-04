@@ -1,11 +1,12 @@
 #!/bin/bash
+source "$(dirname "$0")/../env.sh"
 set -euo pipefail
 shopt -s nullglob
 
-# -------- Workstation config --------
-HF3_HOME="/home/postyr/helixfold32"
-INPUT_GLOB="$HOME/project_new/hf3_inputs_2/*.json"
-OUTPUT="$HOME/project_new/outputs/helix_fold_outputs_27_5"
+# Workstation config
+HF3_HOME="$HELIXFOLD3_HOME"
+INPUT_GLOB="$PROJECT_ROOT/hf3_inputs_2/*.json"
+OUTPUT="$PROJECT_ROOT/outputs/helix_fold_outputs_27_5"
 RUN_INFER="${HF3_HOME}/run_infer_no_dbs_test.sh"
 
 # GPU and template behavior
@@ -17,7 +18,7 @@ N_PREDS=1
 
 cd "$HF3_HOME"
 
-# -------- Check essentials --------
+# Check essentials
 if [[ ! -x "$RUN_INFER" ]]; then
   echo "ERROR: run script not executable or missing:"
   echo "  $RUN_INFER"
@@ -47,7 +48,7 @@ echo "NO_PDB_TEMPLATES=${NO_PDB_TEMPLATES}"
 echo "Total inputs: $n"
 echo
 
-# -------- Completion check --------
+# Completion check
 is_complete() {
   local name="$1"
   local base="${OUTPUT}/${name}"
@@ -71,7 +72,7 @@ clean_partial() {
          "${base}/${name}-rank"[1-5] 2>/dev/null || true
 }
 
-# -------- Run sequentially --------
+# Run sequentially
 for input_json in "${inputs[@]}"; do
   name="$(basename "$input_json" .json)"
 

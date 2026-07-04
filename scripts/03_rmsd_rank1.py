@@ -1,6 +1,5 @@
 """
-STEP 3 — Rank-1 filtering + pairwise binder RMSD
-==================================================
+STEP 3 - Rank-1 filtering + pairwise binder RMSD
 Run this after step2. It:
   1. Filters to rank-1 (best) model per binder - method
   2. Builds all method pairs for the same binder
@@ -31,9 +30,7 @@ from Bio.PDB import MMCIFParser, PDBParser, Superimposer, NeighborSearch
 from Bio.PDB.Polypeptide import is_aa
 from joblib import Parallel, delayed
 
-
-# ─── Structure loading ────────────────────────────────────────────────────────
-
+# Structure loading
 def _cif_to_tmp_pdb(cif_path):
     doc = gemmi.cif.read_file(str(cif_path))
     st = gemmi.make_structure_from_block(doc.sole_block())
@@ -74,9 +71,7 @@ def get_protein_residues(chain):
 def get_ca_atoms(chain):
     return [r["CA"] for r in get_protein_residues(chain) if "CA" in r]
 
-
-# ─── Rank-1 table builder ─────────────────────────────────────────────────────
-
+# Rank-1 table builder
 def build_rank1_df(df):
     required = ["binder_sequence", "method", "path", "rank",
                 "file_type", "binder_chain_id", "target_chain_id"]
@@ -85,14 +80,12 @@ def build_rank1_df(df):
 
     dupes = work.duplicated(subset=["binder_sequence", "method"], keep=False)
     if dupes.any():
-        print(f"  WARNING: {dupes.sum()} duplicate rank-1 rows — keeping first.")
+        print(f"  WARNING: {dupes.sum()} duplicate rank-1 rows - keeping first.")
         work = work.drop_duplicates(subset=["binder_sequence", "method"], keep="first")
 
     return work.sort_values(["binder_sequence", "method"]).reset_index(drop=True)
 
-
-# ─── Pair builder ─────────────────────────────────────────────────────────────
-
+# Pair builder
 def build_pairs(rank1_df, directed=False):
     rows = []
     for binder_seq, group in rank1_df.groupby("binder_sequence", sort=False):
@@ -117,9 +110,7 @@ def build_pairs(rank1_df, directed=False):
                  else ["binder_sequence", "method_1", "method_2"])
     return pd.DataFrame(rows).sort_values(sort_cols).reset_index(drop=True)
 
-
-# ─── Binder CA RMSD (aligned on binder) ──────────────────────────────────────
-
+# Binder CA RMSD (aligned on binder)
 def binder_ca_rmsd_for_row(row):
     try:
         s1 = load_structure(row["path_1"], row.get("file_type_1"), "ref")
@@ -140,9 +131,7 @@ def binder_ca_rmsd_for_row(row):
     except Exception as e:
         return {"binder_ca_rmsd": np.nan, "n_ca": 0, "status": "failed", "error": str(e)}
 
-
-# ─── Pocket-aligned RMSD ─────────────────────────────────────────────────────
-
+# Pocket-aligned RMSD
 def residue_key(res):
     return (int(res.id[1]), res.id[2].strip())
 
@@ -214,9 +203,7 @@ def pocket_rmsd_for_row(row, cutoff=5.0):
         return {"pocket_binder_ca_rmsd": np.nan, "n_pocket_residues": np.nan,
                 "status_pocket": "failed", "error_pocket": str(e)}
 
-
-# ─── CLI ─────────────────────────────────────────────────────────────────────
-
+# CLI
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--records", required=True,
@@ -233,7 +220,7 @@ if __name__ == "__main__":
     print("Loading records...")
     df = pd.read_parquet(args.records)
 
-    # ── Step 3a: rank-1 table ─────────────────────────────────────────────────
+    #  Step 3a: rank-1 table 
     print("\nBuilding rank-1 table...")
     rank1 = build_rank1_df(df)
     rank1_path = out_dir / "rank1_structures.parquet"
@@ -241,7 +228,7 @@ if __name__ == "__main__":
     print(f"  {len(rank1)} rank-1 rows ({rank1['binder_sequence'].nunique()} unique binders)")
     print(f"  Saved → {rank1_path}")
 
-    # ── Step 3b: triangular pairs + binder CA RMSD ───────────────────────────
+    #  Step 3b: triangular pairs + binder CA RMSD 
     print("\nBuilding triangular method pairs...")
     pairs = build_pairs(rank1, directed=False)
     print(f"  {len(pairs)} pairs")
@@ -256,7 +243,7 @@ if __name__ == "__main__":
     print(f"  Status: {rmsd_df['status'].value_counts().to_dict()}")
     print(f"  Saved → {rmsd_path}")
 
-    # ── Step 3c: directed pairs + pocket-aligned RMSD ────────────────────────
+    #  Step 3c: directed pairs + pocket-aligned RMSD 
     print("\nBuilding directed pairs for pocket-aligned RMSD...")
     dir_pairs = build_pairs(rank1, directed=True)
     print(f"  {len(dir_pairs)} directed pairs")
@@ -273,9 +260,7 @@ if __name__ == "__main__":
     print(f"  Status: {pocket_df['status_pocket'].value_counts().to_dict()}")
     print(f"  Saved → {pocket_path}")
 
-    print("\n✓ Step 3 complete. Next: run step4_plots.py")
-
-
+    print("\n[OK] Step 3 complete. Next: run step4_plots.py")
 
 """ Execute this by using this command in terminal:
 python rmsd_rank1_3.py \

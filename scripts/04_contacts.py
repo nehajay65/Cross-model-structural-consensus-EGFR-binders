@@ -1,5 +1,5 @@
 """
-Contact interface script — rank-1 binder/target contacts
+Contact interface script - rank-1 binder/target contacts
 Run after step2 (prediction_records_with_metrics.parquet)
 """
 
@@ -14,9 +14,7 @@ import gemmi
 from Bio.PDB import MMCIFParser, PDBParser, NeighborSearch
 from Bio.PDB.Polypeptide import is_aa
 
-
-# ─── Structure loading ────────────────────────────────────────────────────────
-
+# Structure loading
 def _cif_to_tmp_pdb(cif_path):
     doc = gemmi.cif.read_file(str(cif_path))
     st = gemmi.make_structure_from_block(doc.sole_block())
@@ -55,9 +53,7 @@ def get_protein_residues(chain):
 def residue_key(res):
     return (int(res.id[1]), res.id[2].strip())
 
-
-# ─── Rank-1 filter ────────────────────────────────────────────────────────────
-
+# Rank-1 filter
 def build_rank1_df(df):
     required = ["binder_sequence", "method", "path", "rank",
                 "file_type", "binder_chain_id", "target_chain_id"]
@@ -65,13 +61,11 @@ def build_rank1_df(df):
     work = work.dropna(subset=required)
     dupes = work.duplicated(subset=["binder_sequence", "method"], keep=False)
     if dupes.any():
-        print(f"  WARNING: {dupes.sum()} duplicate rank-1 rows — keeping first.")
+        print(f"  WARNING: {dupes.sum()} duplicate rank-1 rows - keeping first.")
         work = work.drop_duplicates(subset=["binder_sequence", "method"], keep="first")
     return work.sort_values(["binder_sequence", "method"]).reset_index(drop=True)
 
-
-# ─── Contact extraction ───────────────────────────────────────────────────────
-
+# Contact extraction
 def make_residue_record(residue, prefix):
     hetflag, resseq, icode = residue.id
     return {
@@ -148,15 +142,12 @@ def compute_contacts_for_row(row, cutoff=5.0):
             "status_contacts": "failed", "error_contacts": str(e)}
         return summary, [], [], []
 
-
-# ─── Main ─────────────────────────────────────────────────────────────────────
-
+# Main
 if __name__ == "__main__":
-    # ── CHANGE THESE PATHS ────────────────────────────────────────────────────
+    #  CHANGE THESE PATHS 
     INPUT_PATH  = Path("./data/prediction_records_with_metrics.parquet")
     OUTPUT_DIR  = Path("./data/contacts")
     CUTOFF      = 5.0
-    # ─────────────────────────────────────────────────────────────────────────
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 

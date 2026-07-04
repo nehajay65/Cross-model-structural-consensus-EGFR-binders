@@ -1,5 +1,5 @@
 """
-STEP 4 — Generate analysis plots
+STEP 4 - Generate analysis plots
 
 Usage:
     python plots.py \
@@ -7,14 +7,14 @@ Usage:
         --out- ./plots
 
 Outputs (all saved to ./plots/):
-    01_records_per_method.png         — how many structures per method
-    02_score_distributions.png        — confidence score distributions per method
-    03_iptm_per_method.png            — iPTM boxplot across methods (rank-1)
-    04_plddt_per_method.png           — pLDDT boxplot across methods (rank-1)
-    05_binder_length_dist.png         — binder length distribution
-    06_binder_ca_rmsd_heatmap.png     — median binder CA RMSD between method pairs
-    07_pocket_rmsd_heatmap.png        — median pocket-aligned RMSD between method pairs
-    08_rmsd_by_method_pair.png        — RMSD boxplot per method pair
+    01_records_per_method.png - how many structures per method
+    02_score_distributions.png - confidence score distributions per method
+    03_iptm_per_method.png - iPTM boxplot across methods (rank-1)
+    04_plddt_per_method.png - pLDDT boxplot across methods (rank-1)
+    05_binder_length_dist.png - binder length distribution
+    06_binder_ca_rmsd_heatmap.png - median binder CA RMSD between method pairs
+    07_pocket_rmsd_heatmap.png - median pocket-aligned RMSD between method pairs
+    08_rmsd_by_method_pair.png - RMSD boxplot per method pair
 """
 
 import argparse
@@ -52,15 +52,12 @@ PLDDT_COLS = {
     "SeedFold":  "seedfold_complex_plddt",
 }
 
-
 def save(fig, path):
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved → {path}")
 
-
-# ── Plot 1: records per method ────────────────────────────────────────────────
-
+# Plot 1: records per method
 def plot_records_per_method(df, out_dir):
     counts = df.groupby("method").size().reindex(METHOD_ORDER).dropna()
     fig, ax = plt.subplots(figsize=(9, 4))
@@ -71,14 +68,12 @@ def plot_records_per_method(df, out_dir):
     sns.despine()
     save(fig, out_dir / "01_records_per_method.png")
 
-
-# ── Plot 2: score distributions ───────────────────────────────────────────────
-
+# Plot 2: score distributions
 def plot_score_distributions(df, out_dir):
     ok = df[df["score"].notna() & df["parse_success"]]
     methods_with_scores = [m for m in METHOD_ORDER if m in ok["method"].values]
     if not methods_with_scores:
-        print("  Skipping score distributions — no scores found.")
+        print("  Skipping score distributions - no scores found.")
         return
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.boxplot(data=ok[ok["method"].isin(methods_with_scores)],
@@ -93,9 +88,7 @@ def plot_score_distributions(df, out_dir):
     sns.despine()
     save(fig, out_dir / "02_score_distributions.png")
 
-
-# ── Plot 3: iPTM (rank-1) ─────────────────────────────────────────────────────
-
+# Plot 3: iPTM (rank-1)
 def plot_iptm(rank1, out_dir):
     rows = []
     for method, col in IPTM_COLS.items():
@@ -106,7 +99,7 @@ def plot_iptm(rank1, out_dir):
         for v in vals:
             rows.append({"method": method, "iptm": v})
     if not rows:
-        print("  Skipping iPTM plot — no data found.")
+        print("  Skipping iPTM plot - no data found.")
         return
     plot_df = pd.DataFrame(rows)
     order = [m for m in METHOD_ORDER if m in plot_df["method"].values]
@@ -121,9 +114,7 @@ def plot_iptm(rank1, out_dir):
     sns.despine()
     save(fig, out_dir / "03_iptm_per_method.png")
 
-
-# ── Plot 4: pLDDT (rank-1) ───────────────────────────────────────────────────
-
+# Plot 4: pLDDT (rank-1)
 def plot_plddt(rank1, out_dir):
     rows = []
     for method, col in PLDDT_COLS.items():
@@ -136,7 +127,7 @@ def plot_plddt(rank1, out_dir):
         for v in vals:
             rows.append({"method": method, "plddt": v})
     if not rows:
-        print("  Skipping pLDDT plot — no data found.")
+        print("  Skipping pLDDT plot - no data found.")
         return
     plot_df = pd.DataFrame(rows)
     order = [m for m in METHOD_ORDER if m in plot_df["method"].values]
@@ -151,9 +142,7 @@ def plot_plddt(rank1, out_dir):
     sns.despine()
     save(fig, out_dir / "04_plddt_per_method.png")
 
-
-# ── Plot 5: binder length distribution ───────────────────────────────────────
-
+# Plot 5: binder length distribution
 def plot_binder_lengths(rank1, out_dir):
     binders = rank1.drop_duplicates("binder_sequence")
     fig, ax = plt.subplots(figsize=(8, 4))
@@ -165,9 +154,7 @@ def plot_binder_lengths(rank1, out_dir):
     sns.despine()
     save(fig, out_dir / "05_binder_length_dist.png")
 
-
-# ── Plot 6: binder CA RMSD heatmap ───────────────────────────────────────────
-
+# Plot 6: binder CA RMSD heatmap
 def _rmsd_heatmap(rmsd_df, value_col, method1_col, method2_col, title, path):
     ok = rmsd_df[rmsd_df[value_col].notna()]
     methods = sorted(set(ok[method1_col].unique()) | set(ok[method2_col].unique()))
@@ -191,7 +178,7 @@ def plot_rmsd_heatmaps(rmsd_df, pocket_df, out_dir):
         med = rmsd_df[rmsd_df["status"] == "ok"].groupby(
             ["method_1", "method_2"])["binder_ca_rmsd"].median().reset_index()
         _rmsd_heatmap(med, "binder_ca_rmsd", "method_1", "method_2",
-                      "Median binder CA RMSD — binder-on-binder alignment (Å)",
+                      "Median binder CA RMSD - binder-on-binder alignment (Å)",
                       out_dir / "06_binder_ca_rmsd_heatmap.png")
 
     if pocket_df is not None and "pocket_binder_ca_rmsd" in pocket_df.columns:
@@ -200,12 +187,10 @@ def plot_rmsd_heatmaps(rmsd_df, pocket_df, out_dir):
         med = pocket_df[pocket_df["status_pocket"] == "ok"].groupby(
             [m1_col, m2_col])["pocket_binder_ca_rmsd"].median().reset_index()
         _rmsd_heatmap(med, "pocket_binder_ca_rmsd", m1_col, m2_col,
-                      "Median binder CA RMSD — pocket-aligned (Å)",
+                      "Median binder CA RMSD - pocket-aligned (Å)",
                       out_dir / "07_pocket_rmsd_heatmap.png")
 
-
-# ── Plot 7: RMSD by method pair boxplot ──────────────────────────────────────
-
+# Plot 7: RMSD by method pair boxplot
 def plot_rmsd_by_pair(rmsd_df, out_dir):
     if rmsd_df is None or "binder_ca_rmsd" not in rmsd_df.columns:
         return
@@ -221,9 +206,7 @@ def plot_rmsd_by_pair(rmsd_df, out_dir):
     sns.despine()
     save(fig, out_dir / "08_rmsd_by_method_pair.png")
 
-
-# ─── CLI ─────────────────────────────────────────────────────────────────────
-
+# CLI
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default="./data",
@@ -273,4 +256,4 @@ if __name__ == "__main__":
     plot_rmsd_heatmaps(rmsd_df, pocket, out_dir)
     plot_rmsd_by_pair(rmsd_df, out_dir)
 
-    print(f"\n✓ All plots saved to {out_dir}/")
+    print(f"\n[OK] All plots saved to {out_dir}/")

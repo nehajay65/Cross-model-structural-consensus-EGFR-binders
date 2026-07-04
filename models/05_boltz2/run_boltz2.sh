@@ -1,9 +1,11 @@
 #!/bin/bash
-eval "$(conda shell.bash hook)"
-conda activate /home/postyr/.conda/envs/boltz-clean
-export CUDA_VISIBLE_DEVICES=0
-mkdir -p /home/nehajay/project_new/boltz_outputs
+source "$(dirname "$0")/../env.sh"
 
-python /home/nehajay/project_new/run_boltz_fix_cpu.py predict /home/nehajay/project_new/boltz_yaml_inputs/ \
-    --out_dir /home/nehajay/project_new/boltz_outputs_27_5/ \
+eval "$(conda shell.bash hook)"
+conda activate "$CONDA_ENVS_ROOT/boltz-clean"
+export CUDA_VISIBLE_DEVICES=0
+mkdir -p "$PROJECT_ROOT/boltz_outputs"
+
+python "$(dirname "$0")/run_boltz_fix_cpu.py" predict "$PROJECT_ROOT/boltz_yaml_inputs/" \
+    --out_dir "$PROJECT_ROOT/boltz_outputs_27_5/" \
     --seed 42

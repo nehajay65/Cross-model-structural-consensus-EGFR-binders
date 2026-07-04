@@ -1,11 +1,11 @@
 #!/bin/bash
-# save as: ~/project_new/setup_helix_inputs.sh
+source "$(dirname "$0")/../env.sh"
 set -euo pipefail
 
-BINDER_MSAS=~/project_new/a3m_files/alignments_openfold_new
-EGFR_MSAS=~/project_new/egfr_msa_converted
-INPUT_DIR=~/project_new/af3_inputs
-OUT=~/project_new/outputs/helix_fold_outputs
+BINDER_MSAS="$PROJECT_ROOT/a3m_files/alignments_openfold_new"
+EGFR_MSAS="$PROJECT_ROOT/egfr_msa_converted"
+INPUT_DIR="$PROJECT_ROOT/af3_inputs"
+OUT="$PROJECT_ROOT/outputs/helix_fold_outputs"
 
 STO_FILES="mgnify_hits.sto pdb_hits.sto reduced_bfd_hits.sto uniprot_hits.sto uniref90_hits.sto"
 
@@ -43,4 +43,4 @@ for json in "$INPUT_DIR"/*.json; do
 done
 
 echo ""
-echo "Done — set up: $count | missing MSAs: $missing"
+echo "Done - set up: $count | missing MSAs: $missing"

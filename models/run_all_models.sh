@@ -1,15 +1,18 @@
 #!/bin/bash
-# ─────────────────────────────────────────────────────────────
-# Model inference — run order
-# ─────────────────────────────────────────────────────────────
+# Model inference - run order
 # Each model needs its own conda/venv environment, so this script
 # is a documented walkthrough rather than a single one-shot pipeline.
 # Uncomment the block(s) you want to run, after activating the
 # matching environment and editing the hardcoded paths inside
 # each script to match your own setup.
-# ─────────────────────────────────────────────────────────────
 set -euo pipefail
 cd "$(dirname "$0")"
+
+if [[ ! -f env.sh ]]; then
+  echo "Missing models/env.sh - copy env.example.sh to env.sh and fill in your paths first."
+  exit 1
+fi
+source env.sh
 
 echo "=== 1/9: AlphaFold2 ==="
 # bash 01_alphafold2/run_af2.sh
@@ -44,4 +47,4 @@ echo "=== 9/9: SeedFold ==="
 # download the resulting .tar.gz archives, unpack them, then:
 # python 09_seedfold/extract_seedfold_metrics.py --results_dir <unpacked_results_dir>
 
-echo "All model steps documented above — uncomment as needed."
+echo "All model steps documented above - uncomment as needed."

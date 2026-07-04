@@ -45,7 +45,8 @@ See `report/EGFR_binder_consensus_report.pdf` for the full write-up, figures, an
 │   ├ run_all_models.sh
 │   └ README.md                 # per-model notes, envs, upstream repos
 ├ scripts/                      # Steps 2-5: analysis pipeline
-│   ├ 02_extract_metrics.py     # Pull native confidence metrics (pLDDT, iPTM, PTM) per model
+│   ├ 01_build_records.py       #assembles the raw per-model prediction outputs into the `prediction_records.parquet` the analysis pipeline starts from.
+|   ├ 02_extract_metrics.py     # Pull native confidence metrics (pLDDT, iPTM, PTM) per model
 │   ├ 03_rmsd_rank1.py          # Rank-1 filtering + pairwise binder/pocket RMSD
 │   ├ 04_contacts.py            # Interface contact extraction (5A cutoff) -> Jaccard input
 │   └ 05_plots.py               # Summary figures
@@ -55,14 +56,12 @@ See `report/EGFR_binder_consensus_report.pdf` for the full write-up, figures, an
 └ requirements.txt
 ```
 
-> **Not included yet:** `scripts/01_build_records.py`, which assembles the raw per-model prediction outputs into the `prediction_records.parquet` the analysis pipeline starts from.
-
 ## Pipeline
 
 | Step | Location | Description |
 |------|----------|-------------|
 | 0 | `models/` | Run each of the 9 structure-prediction models on the merged binder set |
-| 1 | `scripts/01_build_records.py` *(not yet added)* | Compile all model outputs + metadata into `prediction_records.parquet` |
+| 1 | `scripts/01_build_records.py` | Compile all model outputs + metadata into `prediction_records.parquet` |
 | 2 | `scripts/02_extract_metrics.py` | Extract native confidence metrics per method |
 | 3 | `scripts/03_rmsd_rank1.py` | Rank-1 filtering, binder CA RMSD, pocket-aligned RMSD |
 | 4 | `scripts/04_contacts.py` | Rank-1 interface contact extraction |

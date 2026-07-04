@@ -1,6 +1,6 @@
 # Cross-Model Structural Consensus for Evaluating De Novo Protein Binders
 
-**MSc Bioinformatics thesis project - University of Copenhagen**
+**MSc Bioinformatics Project 1 - University of Copenhagen**
 Neha Jay · Supervisors: Albert Jelke Kooistra, Melika Keshavarz (Dept. of Drug Design & Pharmacology), Thomas Wim Hamelryck (Dept. of Biology, SCARB)
 
 ## Overview
